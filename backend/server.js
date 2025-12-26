@@ -1,7 +1,7 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
-import { VertexAI } from "@google-cloud/vertexai";
+import fetch from "node-fetch";
 
 dotenv.config();
 
@@ -9,39 +9,55 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// ✅ Vertex AI init (NO auth here)
-const vertexAI = new VertexAI({
-  project: process.env.GCP_PROJECT_ID,
-  location: "us-central1",
-});
+const GEMINI_API_KEY = "AIzaSyC0Esi81VJS99Jbb0j3aU0Xk_QdhBoBK_c";
 
-// ✅ Use Flash first (most reliable)
-const model = vertexAI.getGenerativeModel({
-  model: "gemini-1.5-flash",
-});
+if (!GEMINI_API_KEY) {
+  console.error("❌ GEMINI_API_KEY not found in .env");
+}
+
+// ✅ USE MOST STABLE MODEL
+const GEMINI_URL =
+  "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=" +
+  GEMINI_API_KEY;
 
 app.post("/ai", async (req, res) => {
   try {
-    const prompt =
-      req.body?.contents?.[0]?.parts?.[0]?.text || "System status check";
-
-    const result = await model.generateContent({
-      contents: [{ role: "user", parts: [{ text: prompt }] }],
+    const apiRes = await fetch(GEMINI_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(req.body),
     });
 
-    const text =
-      result.response.candidates?.[0]?.content?.parts?.[0]?.text ||
-      "No response";
+    const rawText = await apiRes.text(); // 🔥 IMPORTANT
 
-    res.json({
-      candidates: [{ content: { parts: [{ text }] } }],
-    });
+    if (!rawText) {
+      throw new Error("Empty response from Gemini API");
+    }
+
+    let data;
+    try {
+      data = JSON.parse(rawText);
+    } catch (parseErr) {
+      console.error("❌ Gemini returned non-JSON:", rawText);
+      throw new Error("Invalid JSON from Gemini");
+    }
+
+    if (!apiRes.ok) {
+      console.error("❌ Gemini API error:", data);
+      return res.status(500).json(data);
+    }
+
+    res.json(data);
   } catch (err) {
-    console.error("❌ Vertex AI Error:", err);
-    res.status(500).json({ error: { message: err.message } });
+    console.error("❌ Gemini backend failed:", err.message);
+    res.status(500).json({
+      error: {
+        message: err.message,
+      },
+    });
   }
 });
 
 app.listen(3000, () => {
-  console.log("🚀 Backend running on http://localhost:3000");
+  console.log("🚀 Gemini backend running on http://localhost:3000");
 });

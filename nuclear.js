@@ -65,39 +65,40 @@ const charts = {
 };
 
 // 5. CORRECTED AI CO-PILOT HEARTBEAT (Fixes 404 Error)
-async function coPilotHeartbeat() {
-    const aiBox = document.getElementById('aiAnalysis');
-    const last = (arr) => arr[arr.length - 1].toFixed(1);
-    
-    // FIXED URL: Must include ':generateContent' at the en
-const API_URL = "http://localhost:3000/ai";
+function coPilotHeartbeat() {
+  const aiBox = document.getElementById("aiAnalysis");
 
+  const temp = history.temp[history.temp.length - 1];
+  const press = history.press[history.press.length - 1];
+  const rad = history.rad[history.rad.length - 1];
+  const flow = history.water[history.water.length - 1];
 
-    const prompt = `CO-PILOT OVERWATCH:
-    Current Data: Temp ${last(history.temp)}C, Press ${last(history.press)}Bar, Rad ${last(history.rad)}uSv/h, Air ${last(history.air)}kPa, Flow ${last(history.water)}m3/s.
-    System is under your monitoring. Give a 1-sentence tactical briefing on overall safety.`;
+  let status = "NORMAL";
+  let assessment = "All reactor parameters are within nominal operating limits.";
+  let action = "Continue routine monitoring.";
 
-    try {
-        const response = await fetch(API_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' }, // Required for v1beta
-            body: JSON.stringify({
-                contents: [{ parts: [{ text: prompt }] }]
-            })
-        });
+  if (temp > 550 || rad > 180) {
+    status = "EMERGENCY";
+    assessment =
+      "Critical safety thresholds exceeded. Core temperature or radiation levels are unsafe.";
+    action = "Initiate immediate SCRAM and evacuate non-essential personnel.";
+    aiBox.style.color = "#ff3131";
+  } else if (temp > 450 || rad > 120 || press > 180) {
+    status = "WARNING";
+    assessment =
+      "Reactor parameters show abnormal trends indicating potential instability.";
+    action = "Increase coolant flow and prepare for possible SCRAM.";
+    aiBox.style.color = "#ff9d00";
+  } else {
+    aiBox.style.color = "#39ff14";
+  }
 
-        const data = await response.json();
-
-        if (data.error) throw new Error(data.error.message);
-
-        if (data.candidates && data.candidates[0]) {
-            aiBox.innerText = ">> " + data.candidates[0].content.parts[0].text;
-        }
-    } catch (e) {
-        console.error("Co-pilot Connection Error:", e);
-        aiBox.innerText = ">> CO-PILOT OFFLINE: " + e.message;
-    }
+  aiBox.innerText =
+`Status: ${status}
+Assessment: ${assessment}
+Action: ${action}`;
 }
+
 
 // 6. PHYSICS ENGINE & SIMULATION
 function updateSimulation() {
