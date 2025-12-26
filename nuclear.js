@@ -100,29 +100,38 @@ function coPilotHeartbeat() {
   const flow = history.water[history.water.length - 1];
 
   let status = "NORMAL";
-  let assessment = "All reactor parameters are within nominal operating limits.";
-  let action = "Continue routine monitoring.";
+  let assessment = "All monitored parameters remain within nominal operating boundaries.\nNo anomalous thermal, radiological, or hydraulic behavior detected.";
+  let action = "System stability confirmed. Reactor core dynamics and containment conditions are balanced.";
 
   if (temp > 550 || rad > 180) {
     status = "EMERGENCY";
     assessment =
-      "Critical safety thresholds exceeded. Core temperature or radiation levels are unsafe.";
+      "Critical safety thresholds exceeded. Core temperature or radiation levels are unsafe.System behavior requires attention. Preventive action is advised to avoid escalation.";
     action = "Initiate immediate SCRAM and evacuate non-essential personnel.";
     aiBox.style.color = "#ff3131";
   } else if (temp > 450 || rad > 120 || press > 180) {
     status = "WARNING";
     assessment =
-      "Reactor parameters show abnormal trends indicating potential instability.";
-    action = "Increase coolant flow and prepare for possible SCRAM.";
+      "Early indicators of instability detected. \nObserved trends suggest a deviation from optimal reactor equilibrium.";
+    action = "System behavior requires attention. Preventive action is advised to avoid escalation & Increase coolant flow and prepare for possible SCRAM.";
     aiBox.style.color = "#ff9d00";
   } else {
     aiBox.style.color = "#39ff14";
   }
+const finalText =
+`SYSTEM STATUS: ${status}
 
-  aiBox.innerText =
-`Status: ${status}
-Assessment: ${assessment}
-Action: ${action}`;
+ANALYSIS:
+${assessment}
+
+RECOMMENDED ACTION:
+${action}
+
+AI NOTE:
+Telemetry trends are continuously evaluated against operational safety thresholds.`;
+
+typeText(aiBox, finalText, 12);
+
 }
 
 // 6. PHYSICS ENGINE & SIMULATION
@@ -207,6 +216,16 @@ document.getElementById('scramBtn').addEventListener('click', () => {
         btn.style.color = "#ff3131";
     }, 5000); // Reset after 5 seconds
 });
+function typeText(el, text, speed = 15) {
+  el.innerText = "";
+  let i = 0;
+
+  const interval = setInterval(() => {
+    el.innerText += text[i++];
+    if (i >= text.length) clearInterval(interval);
+  }, speed);
+}
+
 
 // Start Loops
 setInterval(updateSimulation, 1000);
