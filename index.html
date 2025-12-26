@@ -8,7 +8,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-    <div class="container">
+    <div class="container" id="appContainer">
         <aside class="sidebar">
             <h2>☢️ Core-Guardian</h2>
             <div class="control-group">
@@ -26,6 +26,9 @@
                 <label>🛑 Control Rods: <span id="rodVal">25</span>%</label>
                 <input type="range" id="rodSlider" min="0" max="100" value="25">
             </div>
+            
+            <button id="scramBtn" class="scram-button">MANUAL SCRAM</button>
+
             <div class="sop-panel">
                 <h3>📋 Operator SOP</h3>
                 <ul id="sopList">
@@ -51,8 +54,8 @@
                     <h2 id="pressDisplay">150.0 Bar</h2>
                 </div>
                 <div class="card">
-                    <p>Coolant Status</p>
-                    <h2 id="flowStatus">NORMAL</h2>
+                    <p>Radiation Level</p>
+                    <h2 id="radDisplay">12.5 μSv/h</h2>
                 </div>
                 <div class="card">
                     <p>Anomaly Score</p>
@@ -60,8 +63,19 @@
                 </div>
             </div>
 
-            <div class="charts-container">
+            <div class="charts-container primary-chart">
                 <canvas id="mainChart"></canvas>
+            </div>
+
+            <div class="secondary-grids">
+                <div class="chart-box">
+                    <h3>☢️ Radiation Flux (μSv/h)</h3>
+                    <canvas id="radChart"></canvas>
+                </div>
+                <div class="chart-box">
+                    <h3>🌊 Volumetric Flow (m³/s)</h3>
+                    <canvas id="flowChart"></canvas>
+                </div>
             </div>
 
             <div class="ai-report">

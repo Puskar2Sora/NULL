@@ -1,87 +1,158 @@
-const GEMINI_API_KEY = 'YOUR_API_KEY_HERE'; // <--- আপনার কী বসান
+/**
+ * CORE-GUARDIAN PRO: NUCLEAR SAFETY SIMULATOR
+ * Logic: Direct Gemini API Integration (No Backend)
+ */
 
-let history = { temp: [300], press: [150], labels: [0] };
+// 1. CONFIGURATION - PLACE YOUR KEY HERE
+const GEMINI_API_KEY = 'AIzaSyC0Esi81VJS99Jbb0j3aU0Xk_QdhBoBK_c'; // Get from aistudio.google.com
+
+// 2. DATA STATE
+let history = { 
+    temp: [300], 
+    press: [150], 
+    radiation: [12.5], 
+    flowRate: [850],
+    labels: [0] 
+};
 let counter = 1;
 let anomalyCounter = 0;
+let isScrammed = false;
 
-// Initialize Chart
-const ctx = document.getElementById('mainChart').getContext('2d');
-const mainChart = new Chart(ctx, {
+// 3. INITIALIZE CHARTS (Chart.js)
+const mainChartCtx = document.getElementById('mainChart').getContext('2d');
+const mainChart = new Chart(mainChartCtx, {
     type: 'line',
     data: {
         labels: history.labels,
-        datasets: [{
-            label: 'Core Temperature (°C)',
-            data: history.temp,
-            borderColor: '#00d4ff',
-            tension: 0.3,
-            yAxisID: 'y',
-        }]
+        datasets: [
+            { label: 'Temp (°C)', data: history.temp, borderColor: '#00d4ff', tension: 0.3, yAxisID: 'y' },
+            { label: 'Pressure (Bar)', data: history.press, borderColor: '#ffa500', tension: 0.3, yAxisID: 'y1' }
+        ]
     },
     options: { responsive: true, maintainAspectRatio: false }
 });
 
-async function callGemini(temp, flow, slope) {
+const radChart = new Chart(document.getElementById('radChart').getContext('2d'), {
+    type: 'line',
+    data: {
+        labels: history.labels,
+        datasets: [{ label: 'Radiation (μSv/h)', data: history.radiation, borderColor: '#00ff41', backgroundColor: 'rgba(0, 255, 65, 0.1)', fill: true, pointRadius: 0 }]
+    },
+    options: { responsive: true, maintainAspectRatio: false }
+});
+
+const flowChart = new Chart(document.getElementById('flowChart').getContext('2d'), {
+    type: 'line',
+    data: {
+        labels: history.labels,
+        datasets: [{ label: 'Flow (m³/s)', data: history.flowRate, borderColor: '#3498db', borderDash: [5, 5], pointRadius: 0 }]
+    },
+    options: { responsive: true, maintainAspectRatio: false }
+});
+
+// 4. INTERACTIVE CONTROLS
+document.getElementById('scramBtn').addEventListener('click', () => {
+    isScrammed = true;
+    document.getElementById('rodSlider').value = 100;
+    document.getElementById('flowSlider').value = 100;
+    document.getElementById('aiAnalysis').innerText = "🚨 SCRAM INITIATED. AI analyzing shutdown stability...";
+});
+
+// 5. AI INTEGRATION (DIRECT CALL)
+async function callGemini(temp, flow, press, rad) {
     const aiBox = document.getElementById('aiAnalysis');
-    aiBox.innerHTML = "🤖 AI analyzing physics trend...";
+    aiBox.innerHTML = "🤖 <span class='blinking'>AI Analyzing Physics Anomaly...</span>";
     
-    const prompt = `Reactor failure detected. Temp: ${temp}C, Flow: ${flow}%, Slope: ${slope}. Give 1 urgent instruction.`;
+    // Direct API URL
+    const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
     
+    const prompt = `NUCLEAR RISK ASSESSMENT:
+    - Core Temp: ${temp}°C
+    - Core Pressure: ${press} Bar
+    - Radiation Flux: ${rad} μSv/h
+    - Coolant Flow: ${flow}%
+    
+    Identify the most critical risk and give one high-level engineering instruction to prevent a meltdown.`;
+
     try {
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+        const response = await fetch(API_URL, {
             method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
         });
+        
         const data = await response.json();
+        
+        if (data.error) throw new Error(data.error.message); // Handle key/limit errors
+        
         aiBox.innerText = data.candidates[0].content.parts[0].text;
     } catch (e) {
-        aiBox.innerText = "AI Communication Error.";
+        console.error("Gemini Error:", e);
+        aiBox.innerText = `AI Communication Offline: ${e.message}. Follow Manual SOP.`;
     }
 }
 
+// 6. PHYSICS ENGINE & UI UPDATE
 function updateSimulation() {
-    const flow = document.getElementById('flowSlider').value;
-    const rods = document.getElementById('rodSlider').value;
-    document.getElementById('flowVal').innerText = flow;
+    const flowInput = parseInt(document.getElementById('flowSlider').value);
+    const rods = parseInt(document.getElementById('rodSlider').value);
+    
+    document.getElementById('flowVal').innerText = flowInput;
     document.getElementById('rodVal').innerText = rods;
 
     let lastTemp = history.temp[history.temp.length - 1];
     let lastPress = history.press[history.press.length - 1];
 
-    // Physics Engine
-    let riseFactor = (100 - flow) * 0.4 + (25 - rods) * 0.6;
-    let newTemp = riseFactor > 0 ? lastTemp + (riseFactor * 0.2) : lastTemp + (Math.random() - 0.5);
-    let newPress = riseFactor > 0 ? lastPress + (riseFactor * 0.1) : 150 + (Math.random() - 0.2);
+    // SCIENTIFIC LOGIC: Heat generated by lifting rods (lower rod %) vs Cooling (flow %)
+    let riseFactor = (85 - flowInput) * 0.5 + (30 - rods) * 0.8;
+    if (isScrammed) riseFactor = -25; // Force rapid cooling
 
-    let slope = newTemp - lastTemp;
+    let newTemp = Math.max(20, lastTemp + (riseFactor * 0.25) + (Math.random() - 0.5));
+    let newPress = Math.max(1, lastPress + (riseFactor * 0.18) + (Math.random() - 0.5));
+    let newRad = Math.max(0.1, (100 - rods) * 2.8 + (Math.random() * 5));
+    let currentFlowRate = (flowInput * 12.5) + (Math.random() * 15);
 
-    // Update UI
+    // Update UI Elements
     document.getElementById('tempDisplay').innerText = `${newTemp.toFixed(1)} °C`;
     document.getElementById('pressDisplay').innerText = `${newPress.toFixed(1)} Bar`;
-    
-    // Status Logic
+    document.getElementById('radDisplay').innerText = `${newRad.toFixed(1)} μSv/h`;
+    document.getElementById('anomalyScore').innerText = Math.abs(newTemp - lastTemp).toFixed(1);
+
+    // Safety Status Logic
     const badge = document.getElementById('statusBadge');
-    const sopList = document.getElementById('sopList');
-    
-    if (slope > 2.5 || newTemp > 500) {
-        anomalyCounter++;
-        badge.innerText = "🚨 CRITICAL ANOMALY";
+    if (newTemp > 500 || newRad > 180 || newPress > 260) {
         badge.className = "badge critical";
-        sopList.innerHTML = "<li>Trigger SCRAM Rods</li><li>Activate Backup Coolant</li>";
+        badge.innerText = "🚨 CRITICAL ANOMALY";
+        document.getElementById('appContainer').classList.add('critical-mode');
         
-        if (anomalyCounter === 5) callGemini(newTemp.toFixed(1), flow, slope.toFixed(2));
+        anomalyCounter++;
+        // If system is unstable for 5 seconds, ask AI for advice
+        if (anomalyCounter === 5) {
+            callGemini(newTemp.toFixed(1), flowInput, newPress.toFixed(1), newRad.toFixed(1));
+        }
     } else {
-        anomalyCounter = 0;
-        badge.innerText = "SYSTEM NOMINAL";
         badge.className = "badge safe";
-        sopList.innerHTML = "<li>Monitor stability</li><li>Log hourly data</li>";
+        badge.innerText = "SYSTEM NOMINAL";
+        document.getElementById('appContainer').classList.remove('critical-mode');
+        anomalyCounter = 0;
     }
 
-    // Update Chart
+    // Update Arrays & Manage History Size
     history.temp.push(newTemp);
+    history.press.push(newPress);
+    history.radiation.push(newRad);
+    history.flowRate.push(currentFlowRate);
     history.labels.push(counter++);
-    if (history.temp.length > 30) { history.temp.shift(); history.labels.shift(); }
-    mainChart.update();
+    
+    if (history.temp.length > 30) {
+        Object.keys(history).forEach(key => history[key].shift());
+    }
+
+    // Update Visuals
+    mainChart.update('none');
+    radChart.update('none');
+    flowChart.update('none');
 }
 
+// Start Simulator
 setInterval(updateSimulation, 1000);

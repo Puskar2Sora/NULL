@@ -1,4 +1,4 @@
- :root {
+:root {
     --bg-dark: #0e1117;
     --card-bg: #1a1c23;
     --accent-blue: #00d4ff;
@@ -12,15 +12,22 @@ body {
     color: white;
     font-family: 'Segoe UI', sans-serif;
     margin: 0;
+    transition: background 0.5s ease;
 }
 
 .container { display: flex; height: 100vh; }
+
+.container.critical-mode {
+    background: radial-gradient(circle, #2a0a0a 0%, #0e1117 100%);
+}
 
 .sidebar {
     width: 300px;
     background: #161920;
     padding: 20px;
     border-right: 1px solid #333;
+    display: flex;
+    flex-direction: column;
 }
 
 .main-content { flex: 1; padding: 25px; overflow-y: auto; }
@@ -28,6 +35,18 @@ body {
 .control-group { margin-bottom: 25px; }
 
 input[type="range"] { width: 100%; cursor: pointer; }
+
+.scram-button {
+    background: var(--danger);
+    color: white;
+    border: none;
+    padding: 15px;
+    border-radius: 5px;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 0 15px rgba(255, 75, 75, 0.4);
+    margin-bottom: 20px;
+}
 
 .metrics-grid {
     display: grid;
@@ -44,23 +63,30 @@ input[type="range"] { width: 100%; cursor: pointer; }
     text-align: center;
 }
 
-.badge {
-    padding: 8px 15px;
-    border-radius: 20px;
-    font-weight: bold;
-    display: inline-block;
-}
-
+.badge { padding: 8px 15px; border-radius: 20px; font-weight: bold; }
 .safe { background: #00ff4133; color: var(--success); }
-.warn { background: #ffa50033; color: var(--warning); }
-.critical { background: #ff4b4b33; color: var(--danger); }
+.critical { background: #ff4b4b33; color: var(--danger); animation: blink 1s infinite; }
 
-.charts-container {
-    background: var(--card-bg);
-    padding: 20px;
-    border-radius: 10px;
-    height: 350px;
+@keyframes blink { 50% { opacity: 0.5; } }
+
+.primary-chart { background: var(--card-bg); height: 350px; padding: 20px; border-radius: 10px; }
+
+.secondary-grids {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-top: 20px;
 }
+
+.chart-box {
+    background: var(--card-bg);
+    padding: 15px;
+    border-radius: 10px;
+    height: 250px;
+    border: 1px solid #333;
+}
+
+.chart-box h3 { font-size: 0.8rem; color: var(--accent-blue); margin-bottom: 10px; }
 
 .ai-report {
     margin-top: 30px;
@@ -68,12 +94,4 @@ input[type="range"] { width: 100%; cursor: pointer; }
     padding: 20px;
     border-radius: 10px;
     border-top: 2px solid var(--accent-blue);
-}
-
-.sop-panel {
-    margin-top: 40px;
-    font-size: 14px;
-    background: #222;
-    padding: 10px;
-    border-radius: 5px;
 }
