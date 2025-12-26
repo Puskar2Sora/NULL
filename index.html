@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Core-Guardian Pro | Nuclear Safety</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <aside class="sidebar">
+            <h2>☢️ Core-Guardian</h2>
+            <div class="control-group">
+                <label>Select Unit</label>
+                <select id="reactorSelect">
+                    <option>Reactor Unit-01 (Alpha)</option>
+                    <option>Reactor Unit-02 (Beta)</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label>🌊 Coolant Flow: <span id="flowVal">100</span>%</label>
+                <input type="range" id="flowSlider" min="0" max="100" value="100">
+            </div>
+            <div class="control-group">
+                <label>🛑 Control Rods: <span id="rodVal">25</span>%</label>
+                <input type="range" id="rodSlider" min="0" max="100" value="25">
+            </div>
+            <div class="sop-panel">
+                <h3>📋 Operator SOP</h3>
+                <ul id="sopList">
+                    <li>Monitor sensor stability.</li>
+                    <li>Log hourly thermal data.</li>
+                </ul>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <header>
+                <h1>Enterprise Nuclear Safety Dashboard</h1>
+                <div id="statusBadge" class="badge safe">SYSTEM NOMINAL</div>
+            </header>
+
+            <div class="metrics-grid">
+                <div class="card">
+                    <p>Core Temperature</p>
+                    <h2 id="tempDisplay">300.0 °C</h2>
+                </div>
+                <div class="card">
+                    <p>Reactor Pressure</p>
+                    <h2 id="pressDisplay">150.0 Bar</h2>
+                </div>
+                <div class="card">
+                    <p>Coolant Status</p>
+                    <h2 id="flowStatus">NORMAL</h2>
+                </div>
+                <div class="card">
+                    <p>Anomaly Score</p>
+                    <h2 id="anomalyScore">0</h2>
+                </div>
+            </div>
+
+            <div class="charts-container">
+                <canvas id="mainChart"></canvas>
+            </div>
+
+            <div class="ai-report">
+                <h3>🤖 Gemini AI Intelligence Report</h3>
+                <div id="aiAnalysis" class="ai-content">
+                    Waiting for data stream anomalies...
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="nuclear.js"></script>
+</body>
+</html>
