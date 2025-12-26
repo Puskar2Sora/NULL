@@ -6,7 +6,8 @@
 
 // 1. CONFIGURATION
 
-const GEMINI_API_KEY = 'AIzaSyC0Esi81VJS99Jbb0j3aU0Xk_QdhBoBK_c'; 
+let emergencyLockdown = false;
+let emergencyStartTime = null;
 
 // 2. DATA STATE
 let history = { 
@@ -189,7 +190,38 @@ function updateSimulation() {
 
     // Update Visual Graphs efficiently
     Object.values(charts).forEach(c => c.update('none')); // 'none' for performance
+    // ===== EMERGENCY ESCALATION LOGIC =====
+if (newTemp > 650 || newRad > 250) {
+  if (!emergencyStartTime) {
+    emergencyStartTime = Date.now();
+  }
+
+  // If emergency persists for more than 15 seconds
+  if (Date.now() - emergencyStartTime > 15000 && !emergencyLockdown) {
+    triggerEmergencyProtocol();
+  }
+} else {
+  emergencyStartTime = null;
 }
+
+}
+
+function triggerEmergencyProtocol() {
+  emergencyLockdown = true;
+
+  // Lock UI controls
+  flowSlider.disabled = true;
+  rodSlider.disabled = true;
+  document.getElementById("scramBtn").disabled = true;
+
+  // Force AI tab open
+  document.querySelectorAll(".tab-content").forEach(t => t.classList.remove("active"));
+  document.getElementById("heatView").classList.add("active");
+
+  // Show emergency popup
+  showEmergencyPopup();
+}
+
 
 // 7. INITIALIZATION
 document.getElementById('scramBtn').addEventListener('click', () => { 
@@ -232,3 +264,29 @@ setInterval(updateSimulation, 1000);
 // Call AI immediately once, then every 10 seconds
 coPilotHeartbeat();
 setInterval(coPilotHeartbeat, 10000);
+
+function showEmergencyPopup() {
+  const popup = document.createElement("div");
+  popup.id = "emergencyPopup";
+
+  popup.innerHTML = `
+    <div class="emergency-box">
+      <h2>🚨 AI EMERGENCY PROTOCOL ACTIVATED</h2>
+      <p>System control has been lost.</p>
+
+      <div class="call-log">
+        <p>📡 Contacting Emergency Services...</p>
+        <p>🚑 Ambulance Dispatch: <span class="ok">CONFIRMED</span></p>
+        <p>🚒 Fire Brigade Dispatch: <span class="ok">CONFIRMED</span></p>
+        <p>🚓 Police Dispatch: <span class="ok">CONFIRMED</span></p>
+      </div>
+
+      <p class="footer-note">
+        AI has assumed emergency coordination authority.<br>
+        Manual operator intervention disabled.
+      </p>
+    </div>
+  `;
+
+  document.body.appendChild(popup);
+}

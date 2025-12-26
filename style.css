@@ -239,3 +239,142 @@ input[type="range"] {
     overflow-x: auto;
   }
 }
+
+
+/* ===== EMERGENCY LOCKDOWN POPUP ===== */
+#emergencyPopup {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.emergency-box {
+  background: #120202;
+  border: 2px solid #ff3131;
+  padding: 30px 40px;
+  width: 420px;
+  text-align: center;
+  box-shadow: 0 0 40px rgba(255, 0, 0, 0.8);
+  animation: pulseRed 1.5s infinite;
+}
+
+.emergency-box h2 {
+  color: #ff3131;
+  margin-bottom: 15px;
+}
+
+.call-log p {
+  font-family: var(--font-mono);
+  margin: 6px 0;
+}
+
+.ok {
+  color: #39ff14;
+  font-weight: bold;
+}
+
+.footer-note {
+  margin-top: 15px;
+  font-size: 0.8rem;
+  color: #ffd166;
+}
+
+@keyframes pulseRed {
+  0% { box-shadow: 0 0 20px rgba(255, 49, 49, 0.6); }
+  50% { box-shadow: 0 0 45px rgba(255, 49, 49, 1); }
+  100% { box-shadow: 0 0 20px rgba(255, 49, 49, 0.6); }
+}
+
+/* ======================================================
+   PROFESSIONAL EMERGENCY OVERLAY (CSS OVERRIDE ONLY)
+   Paste at END of style.css
+====================================================== */
+
+/* Darken & calm the background */
+#emergencyPopup {
+  background: rgba(6, 8, 18, 0.94) !important;
+  backdrop-filter: blur(6px);
+}
+
+/* Main emergency container */
+#emergencyPopup .emergency-box,
+#emergencyPopup .emergency-box-pro {
+  background: linear-gradient(180deg, #0b0e1c 0%, #05070f 100%) !important;
+  border: 1px solid rgba(255, 90, 90, 0.35) !important;
+  box-shadow:
+    0 0 0 1px rgba(255, 90, 90, 0.12),
+    0 25px 80px rgba(0, 0, 0, 0.95) !important;
+  animation: none !important; /* remove childish pulsing */
+  font-family: var(--font-mono);
+}
+
+/* Title styling */
+#emergencyPopup h2 {
+  color: #ff6b6b !important;
+  font-size: 0.9rem !important;
+  letter-spacing: 2px !important;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+/* Remove emoji influence visually */
+#emergencyPopup h2::before,
+#emergencyPopup p::before {
+  display: none !important;
+}
+
+/* Body text */
+#emergencyPopup p {
+  color: #d6dcff !important;
+  font-size: 0.85rem !important;
+  line-height: 1.6 !important;
+}
+
+/* Emergency service log section */
+#emergencyPopup .call-log,
+#emergencyPopup .dispatch-log {
+  margin-top: 18px;
+  background: rgba(12, 16, 40, 0.7);
+  border: 1px solid rgba(120, 140, 255, 0.18);
+}
+
+/* Individual rows */
+#emergencyPopup .call-log p,
+#emergencyPopup .dispatch-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 14px;
+  font-size: 0.78rem;
+  border-bottom: 1px solid rgba(120, 140, 255, 0.12);
+}
+
+#emergencyPopup .call-log p:last-child,
+#emergencyPopup .dispatch-row:last-child {
+  border-bottom: none;
+}
+
+/* CONFIRMED status — calm, not neon */
+#emergencyPopup .ok,
+#emergencyPopup .confirmed {
+  color: #7dff9c !important;
+  font-weight: 500;
+  letter-spacing: 1px;
+}
+
+/* Footer note */
+#emergencyPopup .footer-note {
+  font-size: 0.72rem;
+  color: #aab1ff !important;
+  opacity: 0.85;
+  margin-top: 16px;
+}
+
+/* Remove bright red glow everywhere */
+#emergencyPopup * {
+  box-shadow: none !important;
+  text-shadow: none !important;
+}
