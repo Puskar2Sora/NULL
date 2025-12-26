@@ -3,87 +3,89 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Core-Guardian Pro | Nuclear Safety</title>
+    <title>CORE-GUARDIAN | AI CO-PILOT HSI</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-    <div class="container" id="appContainer">
-        <aside class="sidebar">
-            <h2>☢️ Core-Guardian</h2>
-            <div class="control-group">
-                <label>Select Unit</label>
-                <select id="reactorSelect">
-                    <option>Reactor Unit-01 (Alpha)</option>
-                    <option>Reactor Unit-02 (Beta)</option>
-                </select>
-            </div>
-            <div class="control-group">
-                <label>🌊 Coolant Flow: <span id="flowVal">100</span>%</label>
-                <input type="range" id="flowSlider" min="0" max="100" value="100">
-            </div>
-            <div class="control-group">
-                <label>🛑 Control Rods: <span id="rodVal">25</span>%</label>
-                <input type="range" id="rodSlider" min="0" max="100" value="25">
+    <div class="cyber-container" id="appContainer">
+        <aside class="sidebar-scientific">
+            <div class="brand">
+                <div class="logo-orb"></div>
+                <h2>CORE-GUARDIAN <br><span>v4.0 AI-COPILOT</span></h2>
             </div>
             
-            <button id="scramBtn" class="scram-button">MANUAL SCRAM</button>
-
-            <div class="sop-panel">
-                <h3>📋 Operator SOP</h3>
-                <ul id="sopList">
-                    <li>Monitor sensor stability.</li>
-                    <li>Log hourly thermal data.</li>
-                </ul>
+            <div class="control-panel-group">
+                <p class="panel-label">CO-PILOT SUBSYSTEMS</p>
+                <div class="tab-nav">
+                    <button class="nav-btn active" onclick="switchTab('heat')">🌡️ THERMAL & PRESS</button>
+                    <button class="nav-btn" onclick="switchTab('rad')">☢️ RADIATION FLUX</button>
+                    <button class="nav-btn" onclick="switchTab('air')">💨 CONTAINMENT AIR</button>
+                    <button class="nav-btn" onclick="switchTab('water')">🌊 COOLANT HYDRAULICS</button>
+                </div>
             </div>
+
+            <div class="control-panel-group">
+                <div class="sci-label">PUMP VELOCITY <span id="flowVal">100</span>%</div>
+                <input type="range" id="flowSlider" class="sci-slider" min="0" max="100" value="100">
+            </div>
+
+            <div class="control-panel-group">
+                <div class="sci-label">ROD INSERTION <span id="rodVal">25</span>%</div>
+                <input type="range" id="rodSlider" class="sci-slider" min="0" max="100" value="25">
+            </div>
+            <br></br>
+            <button id="scramBtn" class="scram-button-glow">EMERGENCY SCRAM</button>
         </aside>
 
-        <main class="main-content">
-            <header>
-                <h1>Enterprise Nuclear Safety Dashboard</h1>
-                <div id="statusBadge" class="badge safe">SYSTEM NOMINAL</div>
+        <main class="dashboard-viewport">
+            <header class="dashboard-header">
+                <div class="header-status">
+                    <span class="pulse-icon"></span>
+                    <h1 id="statusBadge">AI OVERWATCH ACTIVE</h1>
+                </div>
+                <div class="timestamp" id="clock">00:00:00 UTC</div>
             </header>
 
-            <div class="metrics-grid">
-                <div class="card">
-                    <p>Core Temperature</p>
-                    <h2 id="tempDisplay">300.0 °C</h2>
+            <section id="heatView" class="tab-content active">
+                <div class="sci-metrics-grid">
+                    <div class="sci-card"><label>CORE TEMP</label><div class="value-group"><span id="tempDisplay" class="value">300.0</span><span class="unit">°C</span></div></div>
+                    <div class="sci-card"><label>PRIMARY PRESS</label><div class="value-group"><span id="pressDisplay" class="value">150.0</span><span class="unit">BAR</span></div></div>
                 </div>
-                <div class="card">
-                    <p>Reactor Pressure</p>
-                    <h2 id="pressDisplay">150.0 Bar</h2>
-                </div>
-                <div class="card">
-                    <p>Radiation Level</p>
-                    <h2 id="radDisplay">12.5 μSv/h</h2>
-                </div>
-                <div class="card">
-                    <p>Anomaly Score</p>
-                    <h2 id="anomalyScore">0</h2>
-                </div>
-            </div>
+                <div class="primary-visualizer"><canvas id="mainChart"></canvas></div>
+            </section>
 
-            <div class="charts-container primary-chart">
-                <canvas id="mainChart"></canvas>
-            </div>
+            <section id="radView" class="tab-content">
+                <div class="sci-metrics-grid">
+                    <div class="sci-card"><label>NEUTRON FLUX</label><div class="value-group"><span id="radDisplay" class="value">12.5</span><span class="unit">μSv/h</span></div></div>
+                    <div class="sci-card"><label>VARIANCE</label><div class="value-group"><span id="anomalyScore" class="value">0.00</span><span class="unit">σ</span></div></div>
+                </div>
+                <div class="primary-visualizer"><canvas id="radChart"></canvas></div>
+            </section>
 
-            <div class="secondary-grids">
-                <div class="chart-box">
-                    <h3>☢️ Radiation Flux (μSv/h)</h3>
-                    <canvas id="radChart"></canvas>
+            <section id="airView" class="tab-content">
+                <div class="sci-metrics-grid">
+                    <div class="sci-card"><label>CONTAINMENT AIR</label><div class="value-group"><span id="airDisplay" class="value">101.3</span><span class="unit">kPa</span></div></div>
+                    <div class="sci-card"><label>ATMOS DELTA</label><div class="value-group"><span id="airDelta" class="value">0.0</span><span class="unit">%</span></div></div>
                 </div>
-                <div class="chart-box">
-                    <h3>🌊 Volumetric Flow (m³/s)</h3>
-                    <canvas id="flowChart"></canvas>
-                </div>
-            </div>
+                <div class="primary-visualizer"><canvas id="airChart"></canvas></div>
+            </section>
 
-            <div class="ai-report">
-                <h3>🤖 Gemini AI Intelligence Report</h3>
-                <div id="aiAnalysis" class="ai-content">
-                    Waiting for data stream anomalies...
+            <section id="waterView" class="tab-content">
+                <div class="sci-metrics-grid">
+                    <div class="sci-card"><label>HYDRAULIC FLOW</label><div class="value-group"><span id="waterDisplay" class="value">850.0</span><span class="unit">m³/s</span></div></div>
+                    <div class="sci-card"><label>PUMP EFFICIENCY</label><div class="value-group"><span id="pumpEff" class="value">98.2</span><span class="unit">%</span></div></div>
                 </div>
-            </div>
+                <div class="primary-visualizer"><canvas id="waterChart"></canvas></div>
+            </section>
+
+            <footer class="ai-copilot-footer">
+                <div class="ai-header">
+                    <div class="ai-status-light"></div>
+                    <h3>GEMINI CO-PILOT ANALYTICS</h3>
+                </div>
+                <div id="aiAnalysis" class="ai-text-output">Initializing neural link to reactor core...</div>
+            </footer>
         </main>
     </div>
     <script src="nuclear.js"></script>
