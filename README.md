@@ -33,8 +33,8 @@ This project emulates that environment with:
 It showcases how autonomous systems can assist human operators in high-risk contexts.
 
 ---
-
-
+## Front
+<img src="pro.png" width="800" style="border-radius:20px; margin-bottom:50px"/></div>
 ---
 
 ## 🖥️ Demo Features
@@ -54,6 +54,8 @@ Simulates key reactor parameters:
 These are visualized with dynamic line charts that update in real time.
 
 ---
+## Main Logic
+<img src="gemini.png" width="800" style="border-radius:20px; margin-bottom:50px"/></div>
 
 ### 🤖 AI Co-Pilot Analytics
 
