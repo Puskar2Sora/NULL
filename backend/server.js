@@ -15,7 +15,8 @@ app.use(bodyParser.json()); // Allow server to read JSON data sent from frontend
 // Initialize Gemini with the key from the .env file
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY);
 // Use the 'gemini-pro' model (good for text-based analysis)
-const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash"});
+// Change this line in your server.js
+const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-lite" }); // High throughput model
 
 
 // --- THE NEW AI ANALYSIS ENDPOINT ---
@@ -29,7 +30,7 @@ app.post('/api/analyze-reactor', async (req, res) => {
         let statusContext = isScrammed ? "EMERGENCY SCRAM IN PROGRESS." : "NORMAL OPERATIONS.";
 
         const prompt = `
-            Role: You are an advanced AI Nuclear Reactor Co-Pilot monitoring a pressurized water reactor.
+            Role: You are an advanced AI Nuclekiar Reactor Co-Pilot monitoring a pressurized water reactor.
             Task: Analyze the live telemetry below and provide a single, concise, professional status message for the main console display.
 
             Live Telemetry:

@@ -276,7 +276,7 @@ function typeText(el, text, speed = 15) {
 
 
 // Start Loops
-setInterval(updateSimulation, 1000);
+setInterval(updateSimulation, 5000);
 // Call AI immediately once, then every 10 seconds
 coPilotHeartbeat();
 setInterval(coPilotHeartbeat, 10000);

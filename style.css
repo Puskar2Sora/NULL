@@ -378,3 +378,65 @@ input[type="range"] {
   box-shadow: none !important;
   text-shadow: none !important;
 }
+
+/* =========================================
+   DEMO EMERGENCY DISPATCH OVERLAY
+========================================= */
+
+#dispatchDemoOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(5, 7, 15, 0.94);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10001;
+  backdrop-filter: blur(6px);
+}
+
+.dispatch-demo-box {
+  width: 480px;
+  background: linear-gradient(180deg, #0b0e1c 0%, #05070f 100%);
+  border: 1px solid rgba(255, 90, 90, 0.35);
+  box-shadow: 0 25px 80px rgba(0, 0, 0, 0.95);
+  padding: 26px;
+  font-family: monospace;
+}
+
+.dispatch-demo-title {
+  font-size: 0.8rem;
+  letter-spacing: 2px;
+  color: #ff6b6b;
+  margin-bottom: 18px;
+  text-align: center;
+}
+
+.dispatch-demo-log {
+  border: 1px solid rgba(120, 140, 255, 0.18);
+  background: rgba(12, 16, 40, 0.7);
+}
+
+.dispatch-demo-log div {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 14px;
+  font-size: 0.75rem;
+  border-bottom: 1px solid rgba(120, 140, 255, 0.12);
+}
+
+.dispatch-demo-log div:last-child {
+  border-bottom: none;
+}
+
+.dispatch-demo-log .ok {
+  color: #7dff9c;
+  letter-spacing: 1px;
+}
+
+.dispatch-demo-note {
+  margin-top: 16px;
+  font-size: 0.72rem;
+  color: #aab1ff;
+  text-align: center;
+  opacity: 0.9;
+}
