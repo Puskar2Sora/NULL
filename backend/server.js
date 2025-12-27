@@ -1,63 +1,70 @@
-import express from "express";
-import cors from "cors";
-import dotenv from "dotenv";
-import fetch from "node-fetch";
-
-dotenv.config();
+require('dotenv').config(); // Load security environment variables
+const express = require('express');
+const cors = require('cors');
+const bodyParser = require('body-parser');
+const { GoogleGenerativeAI } = require("@google/generative-ai");
 
 const app = express();
-app.use(cors());
-app.use(express.json());
+const port = 3000;
 
-const GEMINI_API_KEY = "AIzaSyC0Esi81VJS99Jbb0j3aU0Xk_QdhBoBK_c";
+// Middleware
+app.use(cors()); // Allow frontend to communicate with backend
+app.use(bodyParser.json()); // Allow server to read JSON data sent from frontend
 
-if (!GEMINI_API_KEY) {
-  console.error("❌ GEMINI_API_KEY not found in .env");
-}
+// --- GEMINI SETUP ---
+// Initialize Gemini with the key from the .env file
+const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY);
+// Use the 'gemini-pro' model (good for text-based analysis)
+const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash"});
 
-// ✅ USE MOST STABLE MODEL
-const GEMINI_URL =
-  "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=" +
-  GEMINI_API_KEY;
 
-app.post("/ai", async (req, res) => {
-  try {
-    const apiRes = await fetch(GEMINI_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(req.body),
-    });
-
-    const rawText = await apiRes.text(); // 🔥 IMPORTANT
-
-    if (!rawText) {
-      throw new Error("Empty response from Gemini API");
-    }
-
-    let data;
+// --- THE NEW AI ANALYSIS ENDPOINT ---
+app.post('/api/analyze-reactor', async (req, res) => {
     try {
-      data = JSON.parse(rawText);
-    } catch (parseErr) {
-      console.error("❌ Gemini returned non-JSON:", rawText);
-      throw new Error("Invalid JSON from Gemini");
-    }
+        // 1. Receive data from nuclear.js
+        const { temp, press, rad, air, water, flowRate, rodLevel, isScrammed } = req.body;
 
-    if (!apiRes.ok) {
-      console.error("❌ Gemini API error:", data);
-      return res.status(500).json(data);
-    }
+        // 2. Construct the Engineering Prompt
+        // We give Gemini a persona so it acts like a professional co-pilot.
+        let statusContext = isScrammed ? "EMERGENCY SCRAM IN PROGRESS." : "NORMAL OPERATIONS.";
 
-    res.json(data);
-  } catch (err) {
-    console.error("❌ Gemini backend failed:", err.message);
-    res.status(500).json({
-      error: {
-        message: err.message,
-      },
-    });
-  }
+        const prompt = `
+            Role: You are an advanced AI Nuclear Reactor Co-Pilot monitoring a pressurized water reactor.
+            Task: Analyze the live telemetry below and provide a single, concise, professional status message for the main console display.
+
+            Live Telemetry:
+            - Status Context: ${statusContext}
+            - Core Temperature: ${temp} °C (Critical Threshold: >550°C)
+            - Primary Pressure: ${press} Bar (Critical Threshold: >260 Bar)
+            - Radiation Flux: ${rad} μSv/h (Critical Threshold: >180 μSv/h)
+            - Containment Air Pressure: ${air} kPa (Normal: ~101.3 kPa)
+            - Coolant Water Flow: ${water} m³/s (Pump Power: ${flowRate}%)
+            - Control Rod Insertion: ${rodLevel}%
+
+            Instructions:
+            1. If any parameter is critical, begin response with "ALERT:".
+            2. If parameters are stable but high, begin with "ADVISORY:".
+            3. If normal, begin with "STATUS NOMINAL:".
+            4. Keep the response under 20 words. Be succinct and technical.
+            5. Do not use markdown or asterisks.
+        `;
+
+        // 3. Call Gemini
+        const result = await model.generateContent(prompt);
+        const response = await result.response;
+        const aiText = response.text();
+
+        // 4. Send response back to frontend
+        console.log(`Gemini analysis sent: ${aiText}`);
+        res.json({ analysis: aiText });
+
+    } catch (error) {
+        console.error("Error contacting Gemini:", error);
+        res.status(500).json({ analysis: "SYSTEM ERROR: AI Telemetry Link Offline." });
+    }
 });
 
-app.listen(3000, () => {
-  console.log("🚀 Gemini backend running on http://localhost:3000");
+// Start server
+app.listen(port, () => {
+    console.log(`Nuclear Co-Pilot Backend running at http://localhost:${port}`);
 });

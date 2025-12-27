@@ -92,49 +92,65 @@ rodSlider.addEventListener('input', function() {
 // ==========================================
 // FIX 2: DIRECT API CALL (NO BACKEND NEEDED)
 // ==========================================
-function coPilotHeartbeat() {
-  const aiBox = document.getElementById("aiAnalysis");
+// AI Co-pilot Logic (Called every 10 seconds via setInterval at bottom)
+async function coPilotHeartbeat() {
+    const aiBox = document.getElementById('aiAnalysis');
+    const statusLight = document.querySelector('.ai-status-light');
+    
+    // Helper to get the latest value from history array
+    const last = (arr) => arr[arr.length - 1].toFixed(1);
 
-  const temp = history.temp[history.temp.length - 1];
-  const press = history.press[history.press.length - 1];
-  const rad = history.rad[history.rad.length - 1];
-  const flow = history.water[history.water.length - 1];
+    // Visual cue that AI is thinking
+    aiBox.style.opacity = '0.5';
+    aiBox.innerText = "Analyzing telemetry...";
+    statusLight.style.backgroundColor = "var(--neon-yellow)"; // Yellow while thinking
 
-  let status = "NORMAL";
-  let assessment = "All monitored parameters remain within nominal operating boundaries.\nNo anomalous thermal, radiological, or hydraulic behavior detected.";
-  let action = "System stability confirmed. Reactor core dynamics and containment conditions are balanced.";
+    // 1. Gather current state data
+    const payload = {
+        temp: last(history.temp),
+        press: last(history.press),
+        rad: last(history.rad),
+        air: last(history.air),
+        water: last(history.water),
+        flowRate: document.getElementById('flowSlider').value,
+        rodLevel: document.getElementById('rodSlider').value,
+        isScrammed: isScrammed
+    };
 
-  if (temp > 550 || rad > 180) {
-    status = "EMERGENCY";
-    assessment =
-      "Critical safety thresholds exceeded. Core temperature or radiation levels are unsafe.System behavior requires attention. Preventive action is advised to avoid escalation.";
-    action = "Initiate immediate SCRAM and evacuate non-essential personnel.";
-    aiBox.style.color = "#ff3131";
-  } else if (temp > 450 || rad > 120 || press > 180) {
-    status = "WARNING";
-    assessment =
-      "Early indicators of instability detected. \nObserved trends suggest a deviation from optimal reactor equilibrium.";
-    action = "System behavior requires attention. Preventive action is advised to avoid escalation & Increase coolant flow and prepare for possible SCRAM.";
-    aiBox.style.color = "#ff9d00";
-  } else {
-    aiBox.style.color = "#39ff14";
-  }
-const finalText =
-`SYSTEM STATUS: ${status}
+    try {
+        // 2. Send data to YOUR local Node.js server (not Google directly)
+        const response = await fetch('http://localhost:3000/api/analyze-reactor', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(payload)
+        });
 
-ANALYSIS:
-${assessment}
+        if (!response.ok) throw new Error('Server connection failed');
 
-RECOMMENDED ACTION:
-${action}
+        const data = await response.json();
+        
+        // 3. Display the result from Gemini
+        aiBox.innerText = data.analysis;
+        aiBox.style.opacity = '1';
+        
+        // Change light color based on message content
+        if (data.analysis.includes("ALERT")) {
+             statusLight.style.backgroundColor = "var(--neon-red)";
+        } else if (data.analysis.includes("ADVISORY")) {
+             statusLight.style.backgroundColor = "var(--neon-orange)";
+        } else {
+             statusLight.style.backgroundColor = "var(--neon-blue)";
+        }
 
-AI NOTE:
-Telemetry trends are continuously evaluated against operational safety thresholds.`;
-
-typeText(aiBox, finalText, 12);
-
+    } catch (e) {
+        console.error("Co-Pilot Error:", e);
+        aiBox.innerText = ">> SYSTEM ERROR: AI Co-Pilot connection lost.";
+        statusLight.style.backgroundColor = "#555"; // Grey out connection
+        aiBox.style.opacity = '1';
+    }
 }
-
 // 6. PHYSICS ENGINE & SIMULATION
 function updateSimulation() {
     const flowInput = parseInt(flowSlider.value);
